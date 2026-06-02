@@ -94,7 +94,10 @@ function App() {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/transactions" element={<TransactionHistory />} />
                 <Route path="/draw-credit" element={<DrawCreditPage />} />
-                <Route path="/draw-credit/success" element={<DrawCreditPage />} />
+                <Route
+                  path="/draw-credit/success"
+                  element={<DrawCreditPage />}
+                />
                 <Route path="/open-credit" element={<RequestEvaluation />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

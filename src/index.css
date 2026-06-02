@@ -49,7 +49,12 @@ body {
 }
 
 /* Typography Base Styles */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   line-height: var(--lh-heading);
   margin: 0;
 }
@@ -186,7 +191,9 @@ p {
   border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 1rem;
-  transition: border-color 0.2s, transform 0.2s;
+  transition:
+    border-color 0.2s,
+    transform 0.2s;
   animation: fadeInUp 0.4s ease both;
 }
 
@@ -351,10 +358,18 @@ p {
 }
 
 .form-message--danger .form-message__icon,
-.form-message--error .form-message__icon { color: var(--danger); }
-.form-message--warning .form-message__icon { color: var(--warning); }
-.form-message--info .form-message__icon { color: var(--info); }
-.form-message--success .form-message__icon { color: var(--success); }
+.form-message--error .form-message__icon {
+  color: var(--danger);
+}
+.form-message--warning .form-message__icon {
+  color: var(--warning);
+}
+.form-message--info .form-message__icon {
+  color: var(--info);
+}
+.form-message--success .form-message__icon {
+  color: var(--success);
+}
 
 .form-message__content {
   display: grid;
@@ -368,10 +383,18 @@ p {
 }
 
 .form-message--danger .form-message__title,
-.form-message--error .form-message__title { color: var(--danger); }
-.form-message--warning .form-message__title { color: var(--warning); }
-.form-message--info .form-message__title { color: var(--info); }
-.form-message--success .form-message__title { color: var(--success); }
+.form-message--error .form-message__title {
+  color: var(--danger);
+}
+.form-message--warning .form-message__title {
+  color: var(--warning);
+}
+.form-message--info .form-message__title {
+  color: var(--info);
+}
+.form-message--success .form-message__title {
+  color: var(--success);
+}
 
 .form-message__text {
   margin: 0;
@@ -403,7 +426,9 @@ p {
 }
 
 @keyframes pending-btn-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
