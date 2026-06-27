@@ -1,8 +1,12 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import { WalletInfo, ConnectionStatus, WalletError, WalletType } from '../types/wallet';
 import { connectWallet, disconnectWallet, saveWalletPreference, getStoredWallet } from '../utils/wallet';
 
 const EXPECTED_NETWORK = 'PUBLIC';
+interface BalanceInfo {
+  asset: string; // e.g., 'XLM' or asset_code
+  balance: string;
+}
 
 interface WalletContextType {
   /** The currently connected wallet, or `null` when disconnected. */
@@ -29,6 +33,8 @@ interface WalletContextType {
   hasNetworkMismatch: boolean;
   /** Request the wallet to switch to the expected network. */
   switchNetwork: () => Promise<void>;
+  refreshBalance: () => Promise<void>;
+  setDropdownOpen: (open: boolean) => void;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -117,6 +123,52 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <WalletContext.Provider value={{ wallet, status, error, connect, disconnect, clearError, hasNetworkMismatch, switchNetwork }}>
+  const [balances, setBalances] = useState<BalanceInfo[] | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const pollInterval = useRef<NodeJS.Timeout | null>(null);
+
+  const fetchBalances = async () => {
+    if (!wallet?.publicKey) return;
+    try {
+      const networkUrl = wallet.network === 'public' ? 'https://horizon.stellar.org' : 'https://horizon-testnet.stellar.org';
+      const response = await fetch(`${networkUrl}/accounts/${wallet.publicKey}`);
+      const data = await response.json();
+      const bal: BalanceInfo[] = data.balances.map((b: any) => ({
+        asset: b.asset_type === 'native' ? 'XLM' : b.asset_code,
+        balance: b.balance,
+      }));
+      setBalances(bal);
+      setLastUpdated(new Date());
+    } catch (e) {
+      console.error('Failed to fetch balances', e);
+      setBalances(null);
+    }
+  };
+
+  const refreshBalance = async () => {
+    await fetchBalances();
+  };
+
+  const setDropdownOpen = (open: boolean) => {
+    if (open) {
+      // start polling
+      fetchBalances();
+      pollInterval.current = setInterval(fetchBalances, 30000);
+    } else if (pollInterval.current) {
+      clearInterval(pollInterval.current);
+      pollInterval.current = null;
+    }
+  };
+
+  // Clean up interval on unmount
+  useEffect(() => {
+    return () => {
+      if (pollInterval.current) clearInterval(pollInterval.current);
+    };
+  }, []);
+
+  return (
+    <WalletContext.Provider value={{ wallet, status, error, connect, disconnect, clearError, balances, lastUpdated, refreshBalance, setDropdownOpen }}>
       {children}
     </WalletContext.Provider>
   );
