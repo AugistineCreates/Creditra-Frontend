@@ -48,6 +48,37 @@ export const WalletButton = () => {
   };
 
   if (wallet && status === 'connected') {
+    // Notify context about dropdown visibility for polling
+    const { balances, lastUpdated, refreshBalance, setDropdownOpen } = useWallet();
+    // Ensure polling starts/stops when dropdown visibility changes
+    useEffect(() => {
+      setDropdownOpen(showDropdown);
+    }, [showDropdown, setDropdownOpen]);
+
+    const balanceDisplay = balances ? balances.map((b, i) => (
+      <div key={i} className="balance-item">
+        <span className="label">Balance ({b.asset}):</span>
+        <span className="value">{b.balance}</span>
+      </div>
+    )) : <span className="value">Unknown</span>;
+
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [announceMsg, setAnnounceMsg] = useState('');
+
+    const handleRefresh = async () => {
+      setIsRefreshing(true);
+      try {
+        await refreshBalance();
+        setAnnounceMsg('Balance refreshed');
+      } catch {
+        setAnnounceMsg('Failed to refresh balance');
+      } finally {
+        setIsRefreshing(false);
+        // Clear announcement after a short time for screen readers
+        setTimeout(() => setAnnounceMsg(''), 3000);
+      }
+    };
+
     return (
       <div className="wallet-connected">
         <button 
@@ -71,31 +102,29 @@ export const WalletButton = () => {
               <span className="label">Network:</span>
               <span className="value">{wallet.network}</span>
             </div>
-            <button 
-              className="show-qr-toggle-btn"
-              role="menuitem"
-              onClick={() => setShowQr(!showQr)}
-              aria-expanded={showQr}
-              aria-controls="wallet-qr-container"
+            <div className="dropdown-item" role="menuitem">
+              <span className="label">Balance:</span>
+              <div className="balance-list">{balanceDisplay}</div>
+            </div>
+            <button
+              className="refresh-btn"
+              onClick={handleRefresh}
+              aria-label="Refresh wallet balance"
+              disabled={isRefreshing}
             >
-              {showQr ? 'Hide QR Code' : 'Show QR Code'}
+              {isRefreshing ? (
+                <span className="spinner" aria-hidden="true"></span>
+              ) : (
+                'Refresh'
+              )}
             </button>
-            {showQr && (
-              <div className="wallet-qr-container" id="wallet-qr-container" role="menuitem">
-                <div className="wallet-qr-row">
-                  <WalletQrCode address={wallet.publicKey} />
-                  <div className="wallet-qr-info">
-                    <span className="wallet-qr-address-label">Address</span>
-                    <CopyToClipboard
-                      value={wallet.publicKey}
-                      displayValue={shortenAddress(wallet.publicKey)}
-                      ariaLabel="Copy connected wallet address"
-                    />
-                  </div>
-                </div>
+            {lastUpdated && (
+              <div className="timestamp" role="status" aria-live="polite">
+                Last updated: {formatRelative(lastUpdated)}
               </div>
             )}
-            <button className="disconnect-btn" role="menuitem" onClick={handleDisconnect}>
+            <span className="sr-only" role="status" aria-live="polite">{announceMsg}</span>
+            <button className="disconnect-btn" onClick={handleDisconnect}>
               Disconnect
             </button>
           </div>
