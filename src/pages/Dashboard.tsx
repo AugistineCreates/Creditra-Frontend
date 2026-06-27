@@ -7,10 +7,11 @@ import { useWallet } from '../context/WalletContext';
 import { MOCK_CREDIT_LINES } from '../data/mockData';
 import type { Transaction } from '../types/creditLine';
 import {
-  COLOR, UTIL_COLOR,
+  COLOR, UTIL_COLOR, RISK_COLOR,
   fmt, fmtDate,
   getUtilizationLevel, utilizationPct,
 } from '../utils/tokens';
+import { readJson, writeJson } from '../utils/storage';
 import './Dashboard.css';
 import { Skeleton } from '../components/Skeleton';
 
@@ -40,6 +41,113 @@ const TX_COLOR: Record<string, string> = {
   Fee: COLOR.muted,
   Interest: COLOR.warning,
 };
+
+// ─── Risk Score Gauge ─────────────────────────────────────────────────────────
+
+function RiskGauge({ score, trend, lastUpdated }: {
+  score: number;
+  trend: 'improving' | 'declining' | 'stable';
+  lastUpdated: string;
+}) {
+  // SVG arc from 180° to 0° (semicircle)
+  const radius = 55;
+  const cx = 80;
+  const cy = 75;
+  const circumference = Math.PI * radius; // half circle
+  const normalizedScore = Math.min(100, Math.max(0, score));
+  const offset = circumference - (normalizedScore / 100) * circumference;
+
+  const gaugeColor = score >= 70 ? COLOR.success : score >= 50 ? COLOR.warning : COLOR.danger;
+  const trendArrow = trend === 'improving' ? '▲' : trend === 'declining' ? '▼' : '─';
+  const trendColor = trend === 'improving' ? COLOR.success : trend === 'declining' ? COLOR.danger : COLOR.muted;
+
+  return (
+    <div className="risk-gauge-container">
+      <svg className="risk-gauge-svg" viewBox="0 0 160 100">
+        {/* Background arc */}
+        <path
+          className="risk-gauge-bg"
+          d={`M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${cx + radius} ${cy}`}
+        />
+        {/* Filled arc */}
+        <path
+          className="risk-gauge-fill"
+          d={`M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${cx + radius} ${cy}`}
+          stroke={gaugeColor}
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+        />
+        {/* Score text */}
+        <text x={cx} y={cy - 12} className="risk-gauge-score">{normalizedScore}</text>
+        <text x={cx} y={cy - 38} className="risk-gauge-label">Risk Score</text>
+      </svg>
+
+      <div className="risk-meta">
+        <div className="risk-meta-item">
+          <span className="rm-label">Trend</span>
+          <span className="rm-value" style={{ color: trendColor }}>
+            {trendArrow} {trend.charAt(0).toUpperCase() + trend.slice(1)}
+          </span>
+        </div>
+        <div className="risk-meta-item">
+          <span className="rm-label">Last Updated</span>
+          <span className="rm-value" style={{ color: COLOR.muted }}>{fmtDate(lastUpdated)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Risk Explainer ───────────────────────────────────────────────────────────
+
+/**
+ * Inline explainer beneath the RiskGauge that translates the score band
+ * into a plain‑language sentence.
+ *
+ * - Text is derived from `RISK_COLOR(score)` so it stays in sync with the
+ *   design‑system colour band.
+ * - Dismissal is persisted per wallet address via `storage.ts`.
+ * - Fade‑in animation is disabled when `prefers-reduced-motion` is set.
+ *
+ * @see docs/MICROCOPY.md — tone and sentence inventory
+ */
+function RiskExplainer({ score, address }: { score: number; address?: string }) {
+  const [dismissed, setDismissed] = useState(() => {
+    if (!address) return true;
+    return readJson(`risk-explainer-dismissed-${address}`, false);
+  });
+
+  if (dismissed || !address) return null;
+
+  const band = RISK_COLOR(score);
+
+  const message = band === COLOR.success
+    ? 'Strong credit position \u2014 you\u2019re above the recommended threshold for new draws.'
+    : band === COLOR.warning
+    ? 'Fair credit position \u2014 within acceptable range, though keep an eye on your utilization.'
+    : 'Below the recommended threshold \u2014 consider improving your score before new draws.';
+
+  const handleDismiss = () => {
+    setDismissed(true);
+    writeJson(`risk-explainer-dismissed-${address}`, true);
+  };
+
+  return (
+    <div className="risk-explainer" role="status" style={{ borderLeftColor: band }}>
+      <p className="risk-explainer-text">{message}</p>
+      <button
+        className="risk-explainer-dismiss"
+        onClick={handleDismiss}
+        aria-label="Dismiss risk score explainer"
+        type="button"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      </button>
+    </div>
+  );
+}
 
 // ─── Dashboard Component ──────────────────────────────────────────────────────
 
@@ -369,11 +477,14 @@ export function Dashboard() {
                 </div>
               </div>
             ) : (
-              <RiskGauge
-                score={avgRiskScore}
-                trend="improving"
-                lastUpdated={activeLinesOnly[0]?.updatedAt ?? new Date().toISOString()}
-              />
+              <>
+                <RiskGauge
+                  score={avgRiskScore}
+                  trend="improving"
+                  lastUpdated={activeLinesOnly[0]?.updatedAt ?? new Date().toISOString()}
+                />
+                <RiskExplainer score={avgRiskScore} address={wallet?.publicKey} />
+              </>
             )}
           </div>
 
