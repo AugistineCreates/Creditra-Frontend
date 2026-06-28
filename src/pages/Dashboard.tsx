@@ -24,6 +24,11 @@ import { useFocusTrap } from "../hooks/useFocusTrap";
 import { useInertBackdrop } from "../hooks/useInertBackdrop";
 import { useBodyScrollLock } from "../hooks/useBodyScrollLock";
 import { getUtilizationLevel } from "../utils/tokens";
+import { TipJar } from "../components/TipJar";
+import { NextSteps } from "../components/NextSteps";
+import { WhatChanged } from "../components/WhatChanged";
+
+
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -167,12 +172,14 @@ export function Dashboard() {
   const { wallet, status } = useWallet();
   const creditLines = MOCK_CREDIT_LINES;
 
+  const [repayCount, setRepayCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isExplainOpen, setIsExplainOpen] = useState(false);
   const explainTriggerRef = useRef<HTMLButtonElement>(null);
   const [selectedCompareLines, setSelectedCompareLines] = useState<string[]>([]);
   const [showCompare, setShowCompare] = useState(false);
   const compareTriggerRef = useRef<HTMLButtonElement>(null);
+
 
   const handleCloseCompare = () => {
     setShowCompare(false);
@@ -222,13 +229,14 @@ export function Dashboard() {
       creditLines.filter(
         (cl) => cl.status === "Active" || cl.status === "Suspended",
       ),
-    [creditLines],
+    [creditLines, repayCount],
   );
 
   const activeLinesOnly = useMemo(
     () => creditLines.filter((cl) => cl.status === "Active"),
-    [creditLines],
+    [creditLines, repayCount],
   );
+
 
   const totalLimit = activeLinesOnly.reduce((s, cl) => s + cl.limit, 0);
   const totalUtilized = activeLinesOnly.reduce((s, cl) => s + cl.utilized, 0);
@@ -254,7 +262,8 @@ export function Dashboard() {
     });
     all.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     return all.slice(0, 5);
-  }, [creditLines]);
+  }, [creditLines, repayCount]);
+
 
   const notifications = useMemo(() => {
     const notes: {
@@ -326,7 +335,8 @@ export function Dashboard() {
       }
     });
     return notes;
-  }, [creditLines]);
+  }, [creditLines, repayCount]);
+
 
   const hasLines = creditLines.length > 0;
   const hasUtilized = totalUtilized > 0;
@@ -443,6 +453,11 @@ export function Dashboard() {
 
       <WhatsChangedPanel />
 
+      <TipJar onRepaySuccess={() => setRepayCount((c) => c + 1)} />
+
+      <NextSteps totalAvailable={totalAvailable} totalUtilized={totalUtilized} />
+
+
       <div className="summary-cards" aria-busy={loading}>
         {loading ? (
           <>
@@ -514,7 +529,10 @@ export function Dashboard() {
           <>
             <div className="summary-card">
               <div className="glow" style={{ background: COLOR.accent }} />
-              <p className="label">Total Credit Limit</p>
+              <p className="label">
+                Total Credit Limit
+                <WhatChanged metricId="total-limit" currentValue={totalLimit} format="currency" label="Total Credit Limit" />
+              </p>
               <p className="value" style={{ color: COLOR.accent }}>
                 {fmt(totalLimit)}
               </p>
@@ -528,7 +546,10 @@ export function Dashboard() {
                 className="glow"
                 style={{ background: UTIL_COLOR[overallLevel] }}
               />
-              <p className="label">Total Utilized</p>
+              <p className="label">
+                Total Utilized
+                <WhatChanged metricId="total-utilized" currentValue={totalUtilized} format="currency" label="Total Utilized" />
+              </p>
               <p className="value" style={{ color: UTIL_COLOR[overallLevel] }}>
                 {fmt(totalUtilized)}
               </p>
@@ -536,7 +557,10 @@ export function Dashboard() {
             </div>
             <div className="summary-card">
               <div className="glow" style={{ background: COLOR.success }} />
-              <p className="label">Available Credit</p>
+              <p className="label">
+                Available Credit
+                <WhatChanged metricId="available-credit" currentValue={totalAvailable} format="currency" label="Available Credit" />
+              </p>
               <p className="value" style={{ color: COLOR.success }}>
                 {fmt(totalAvailable)}
               </p>
@@ -598,7 +622,10 @@ export function Dashboard() {
 
            <div className="card" style={{ animationDelay: "0.15s" }} aria-busy={loading}>
              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-               <h2 style={{ margin: 0 }}><span className="icon">🛡️</span> Risk Score</h2>
+               <h2 style={{ margin: 0 }}>
+                 <span className="icon">🛡️</span> Risk Score
+                 <WhatChanged metricId="risk-score" currentValue={avgRiskScore} format="number" label="Risk Score" />
+               </h2>
                {!loading && (
                  <button 
                    ref={explainTriggerRef}
