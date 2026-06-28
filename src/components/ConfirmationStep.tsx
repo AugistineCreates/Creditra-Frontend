@@ -89,13 +89,13 @@ export function ConfirmationStep({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <p className="text-sm text-muted font-medium">Draw amount</p>
-              <p className="mt-1 text-3xl font-bold text-foreground">
+              <p className="mt-1 text-3xl font-bold text-foreground tabular-nums">
                 {formatMoney(safeAmount)}
               </p>
             </div>
             <div className="rounded-lg border border-border bg-background/60 p-3">
               <p className="text-sm text-muted font-medium">Estimated fee</p>
-              <p className="mt-1 font-semibold text-foreground">
+              <p className="mt-1 font-semibold text-foreground tabular-nums">
                 {formatMoney(fee)}
               </p>
             </div>
@@ -103,13 +103,13 @@ export function ConfirmationStep({
               <p className="text-sm text-muted font-medium">
                 Estimated monthly interest
               </p>
-              <p className="mt-1 font-semibold text-foreground">
+              <p className="mt-1 font-semibold text-foreground tabular-nums">
                 {formatMoney(estimatedMonthlyInterest)}
               </p>
             </div>
             <div className="rounded-lg border border-border bg-background/60 p-3">
               <p className="text-sm text-muted font-medium">New balance</p>
-              <p className="mt-1 font-semibold text-foreground">
+              <p className="mt-1 font-semibold text-foreground tabular-nums">
                 {formatMoney(newBalance)}
               </p>
             </div>
@@ -117,7 +117,7 @@ export function ConfirmationStep({
               <p className="text-sm text-muted font-medium">
                 Available after draw
               </p>
-              <p className="mt-1 font-semibold text-foreground">
+              <p className="mt-1 font-semibold text-foreground tabular-nums">
                 {formatMoney(remainingAvailable)}
               </p>
             </div>
@@ -130,78 +130,17 @@ export function ConfirmationStep({
                   <span>Current utilization</span>
                 </AccessibleTooltip>
               </span>
-              <span className="font-semibold text-foreground">
+              <span className="font-semibold text-foreground tabular-nums">
                 {creditLine.utilization}%
               </span>
             </div>
-
-            <div className="rounded-lg border border-border bg-background/40">
-              <div className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex justify-between gap-4 text-sm sm:block">
-                  <span className="text-muted font-medium">Estimated APR</span>
-                  <p className="mt-1 font-semibold text-foreground sm:text-base">
-                    {apr.toFixed(2)}%
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  aria-expanded={isAprDrawerOpen}
-                  aria-controls={aprDrawerId}
-                  onClick={() => setIsAprDrawerOpen((isOpen) => !isOpen)}
-                  className="inline-flex min-h-11 items-center justify-between gap-2 rounded-md px-3 py-2 text-sm font-semibold text-blue-300 transition-colors hover:text-blue-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 motion-reduce:transition-none"
-                >
-                  Why this APR?
-                  <ChevronDown
-                    className={`h-4 w-4 shrink-0 ${isAprDrawerOpen ? "rotate-180" : "rotate-0"} motion-reduce:transition-none`}
-                    aria-hidden="true"
-                  />
-                </button>
-              </div>
-
-              {isAprDrawerOpen && (
-                <section
-                  id={aprDrawerId}
-                  aria-label="APR explanation"
-                  className="border-t border-border px-4 py-3"
-                >
-                  <p className="text-sm text-muted">
-                    Your current estimated APR reflects the pricing inputs on
-                    this line today.
-                  </p>
-                  <dl className="mt-3 grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-lg border border-border bg-surface px-3 py-3">
-                      <dt className="text-sm font-semibold text-foreground">
-                        Risk band
-                      </dt>
-                      <dd className="mt-1 text-sm text-muted">
-                        Current value: {riskBand}. This pricing band sets the
-                        base rate for your line before utilization and term
-                        adjustments.
-                      </dd>
-                    </div>
-                    <div className="rounded-lg border border-border bg-surface px-3 py-3">
-                      <dt className="text-sm font-semibold text-foreground">
-                        Utilization
-                      </dt>
-                      <dd className="mt-1 text-sm text-muted">
-                        Current value: {creditLine.utilization}%. Higher
-                        utilization can increase APR because it leaves less
-                        undrawn capacity on the line.
-                      </dd>
-                    </div>
-                    <div className="rounded-lg border border-border bg-surface px-3 py-3">
-                      <dt className="text-sm font-semibold text-foreground">
-                        Term
-                      </dt>
-                      <dd className="mt-1 text-sm text-muted">
-                        Current value: {termMonths} months. Longer terms usually
-                        carry a higher APR because the balance is expected to
-                        stay outstanding for longer.
-                      </dd>
-                    </div>
-                  </dl>
-                </section>
-              )}
+            <div className="flex justify-between gap-4 text-sm">
+              <span className="text-muted font-medium">After draw</span>
+              <span
+                className={`font-semibold tabular-nums ${newUtilization > 80 ? "text-yellow-500" : "text-foreground"}`}
+              >
+                {newUtilization}%
+              </span>
             </div>
           </div>
           {newUtilization > 80 && (

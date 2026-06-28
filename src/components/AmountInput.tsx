@@ -137,9 +137,9 @@ export function AmountInput({
 
         {/* Helper text explaining the input */}
         <p id={helperId} className="text-sm text-muted">
-          Enter the dollar amount you wish to draw from your credit line.
-          Available credit:{" "}
-          <span className="font-semibold text-foreground">
+          Enter the amount you wish to draw from your available credit.
+          Available limit:{" "}
+          <span className="font-semibold text-foreground tabular-nums">
             {formatMoney(creditLine.available)}
           </span>
         </p>
@@ -169,8 +169,7 @@ export function AmountInput({
             placeholder="0"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="text-2xl font-bold bg-transparent outline-none flex-1 text-foreground placeholder:text-muted/50 min-w-0"
+            className="text-2xl font-bold bg-transparent outline-none flex-1 text-foreground placeholder:text-muted/50 min-w-0 tabular-nums"
             min={validation.minAmount}
             max={creditLine.available}
             step={STEP_AMOUNT}
@@ -205,7 +204,7 @@ export function AmountInput({
             <p className="text-[11px] uppercase tracking-wide text-muted">
               Minimum draw
             </p>
-            <p className="text-sm font-semibold text-foreground">
+            <p className="text-sm font-semibold text-foreground tabular-nums">
               {formatMoney(validation.minAmount)}
             </p>
           </div>
@@ -213,7 +212,7 @@ export function AmountInput({
             <p className="text-[11px] uppercase tracking-wide text-muted">
               Available credit
             </p>
-            <p className="text-sm font-semibold text-foreground">
+            <p className="text-sm font-semibold text-foreground tabular-nums">
               {formatMoney(validation.maxAmount)}
             </p>
           </div>
@@ -221,7 +220,7 @@ export function AmountInput({
             <p className="text-[11px] uppercase tracking-wide text-muted">
               Reserve
             </p>
-            <p className="text-sm font-semibold text-foreground">
+            <p className="text-sm font-semibold text-foreground tabular-nums">
               {formatMoney(validation.recommendedReserve)}
             </p>
           </div>
@@ -266,21 +265,21 @@ export function AmountInput({
       {/* Summary display showing available, requested, and remaining */}
       <div className="bg-surface p-5 rounded-xl border border-border space-y-3 shadow-lg shadow-blue-500/5">
         <div className="flex justify-between text-sm">
-          <span className="text-muted">Available credit:</span>
-          <span className="font-semibold text-foreground">
+          <span className="text-muted">Available:</span>
+          <span className="font-semibold text-foreground tabular-nums">
             {formatMoney(creditLine.available)}
           </span>
         </div>
         <div className="flex justify-between text-sm border-t border-border pt-3">
-          <span className="text-muted">Draw amount:</span>
-          <span className="font-semibold text-foreground">
+          <span className="text-muted">Requested:</span>
+          <span className="font-semibold text-foreground tabular-nums">
             {formatMoney(numAmount)}
           </span>
         </div>
         <div className="flex justify-between text-sm border-t border-border pt-3">
           <span className="text-muted">Remaining credit:</span>
           <span
-            className={`font-semibold ${validation.remainingCredit < validation.recommendedReserve && numAmount > 0 ? "text-amber-400" : "text-foreground"}`}
+            className={`font-semibold tabular-nums ${validation.remainingCredit < validation.recommendedReserve && numAmount > 0 ? "text-amber-400" : "text-foreground"}`}
           >
             {formatMoney(validation.remainingCredit)}
           </span>
