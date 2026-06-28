@@ -34,6 +34,7 @@
  */
 
 import { useMemo, useRef } from 'react';
+import { useReducedMotion } from '../context/ReducedMotionContext';
 import './RiskGauge.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -86,19 +87,7 @@ function formatDate(iso: string): string {
 
 // ─── Hook: reduced-motion ─────────────────────────────────────────────────────
 
-/**
- * Reads `prefers-reduced-motion` synchronously via `matchMedia`.
- * Returns `true` when the user has requested reduced motion.
- * Falls back to `false` in environments where `matchMedia` is unavailable
- * (SSR, jsdom without the media query polyfill).
- */
-function useReducedMotion(): boolean {
-  // matchMedia is not available in jsdom by default; guard defensively.
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-    return false;
-  }
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
+// ─── Hook removed in favour of Context ────────────────────────────────────────
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -106,7 +95,7 @@ export function RiskGauge({ score, trend, lastUpdated }: RiskGaugeProps) {
   const normalizedScore = Math.min(100, Math.max(0, score));
   const offset = CIRCUMFERENCE - (normalizedScore / 100) * CIRCUMFERENCE;
   const colorVar = gaugeColorVar(normalizedScore);
-  const reducedMotion = useReducedMotion();
+  const { isReducedMotionActive: reducedMotion } = useReducedMotion();
 
   /**
    * Arc path descriptor (shared between bg and fill).

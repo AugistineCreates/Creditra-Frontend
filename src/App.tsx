@@ -5,6 +5,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { WalletProvider } from "./context/WalletContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { KycProvider } from "./context/KycContext";
+import { ReducedMotionProvider } from "./context/ReducedMotionContext";
 import { WalletButton } from "./components/WalletButton";
 import { KycDrawer, KycTriggerButton } from "./components/KycDrawer";
 import DrawCreditPage from "./pages/DrawCreditPage";
@@ -92,6 +93,7 @@ function App() {
     <ErrorBoundary>
       <WalletProvider>
         <KycProvider>
+        <ReducedMotionProvider>
         <BrowserRouter>
           <div className="app">
             <header className="header">
@@ -202,6 +204,7 @@ function App() {
             />
           </div>
         </BrowserRouter>
+        </ReducedMotionProvider>
         </KycProvider>
       </WalletProvider>
     </ErrorBoundary>
