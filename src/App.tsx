@@ -7,6 +7,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { KycProvider } from "./context/KycContext";
 import { ReducedMotionProvider } from "./context/ReducedMotionContext";
 import { WalletButton } from "./components/WalletButton";
+import { QuickRepayTrigger } from "./components/QuickRepayTrigger";
 import { KycDrawer, KycTriggerButton } from "./components/KycDrawer";
 import DrawCreditPage from "./pages/DrawCreditPage";
 import CreditLines from "./pages/CreditLines";
@@ -178,12 +179,14 @@ function App() {
               >
                 Settings
               </button>
-              <KycTriggerButton
-                triggerRef={kycTriggerRef}
-                onClick={() => setIsKycDrawerOpen(true)}
-              />
-              <WalletButton />
-            </header>
+               <KycTriggerButton
+                 triggerRef={kycTriggerRef}
+                 onClick={() => setIsKycDrawerOpen(true)}
+               />
+               <QuickRepayTrigger />
+               <WalletButton />
+             </header>
+
             {/* Wallet auto-reconnect timeout banner — self-dismissing,
                 non-blocking; only visible when reconnect takes > 8 s. */}
             <WalletReconnectBanner />
@@ -210,19 +213,20 @@ function App() {
               onClose={() => setIsShortcutHelpOpen(false)}
               triggerRef={openedFromSettingsLink ? settingsTriggerRef : undefined}
             />
-            <KycDrawer
-              isOpen={isKycDrawerOpen}
-              onClose={() => setIsKycDrawerOpen(false)}
-              onResume={(stepId) => {
-                // Navigate to the KYC page with the step pre-selected.
-                // Replace with router.push('/kyc?step=' + stepId) when the
-                // full KYC page exists.
-                console.info('[KYC] Resume at step:', stepId);
-              }}
-              triggerRef={kycTriggerRef}
-            />
-          </div>
-        </BrowserRouter>
+             <KycDrawer
+               isOpen={isKycDrawerOpen}
+               onClose={() => setIsKycDrawerOpen(false)}
+               onResume={(stepId) => {
+                 // Navigate to the KYC page with the step pre-selected.
+                 // Replace with router.push('/kyc?step=' + stepId) when the
+                 // full KYC page exists.
+                 console.info('[KYC] Resume at step:', stepId);
+               }}
+               triggerRef={kycTriggerRef}
+             />
+           </div>
+         </BrowserRouter>
+
         </ReducedMotionProvider>
         </KycProvider>
       </WalletProvider>
