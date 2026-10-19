@@ -9,6 +9,7 @@ import { NoLines } from "../components/illustrations";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import { useInertBackdrop } from "../hooks/useInertBackdrop";
 import { useBodyScrollLock } from "../hooks/useBodyScrollLock";
+import { useCreditLines } from "../hooks/useCreditLines";
 import { MOCK_CREDIT_LINES } from "../data/mockData";
 import type {
   CreditLineStatus,
@@ -385,7 +386,13 @@ export default function CreditLines({
   );
   const [announcement, setAnnouncement] = useState("");
 
-  const [creditLines, setCreditLines] = useState(MOCK_CREDIT_LINES);
+  const { lines: globalLines } = useCreditLines();
+  const [creditLines, setCreditLines] = useState(globalLines);
+
+  useEffect(() => {
+    setCreditLines(globalLines);
+  }, [globalLines]);
+
   const [isLoading, setIsLoading] = useState(true);
   const hasCreditLines = creditLines.length > 0;
 
